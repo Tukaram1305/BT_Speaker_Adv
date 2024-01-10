@@ -1,0 +1,150 @@
+<!DOCTYPE HTML5>
+<html>
+<head>
+<title>Esp32</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap" rel="stylesheet">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+
+<body>
+    <div>POT 0 - H-BOOST</div>
+    <input  class="slider" type="range" min="0" max="99" value="50" id="0">
+
+    <div>POT 1 - L-BOOST</div>
+    <input  class="slider" type="range" min="0" max="99" value="50" id="1">
+
+    <div>POT 2 - LOUDNESS</div>
+    <input  class="slider" type="range" min="20" max="80" value="10" id="2">
+
+    <div>POT 3 - LPF CUTOFF (20 Hz - 212 Hz)  </div> 
+    <div id="cutoff">...</div>
+    <input  class="slider" type="range" min="0" max="99" value="80" id="3" oninput="updCutoff()">
+
+    <div>Podswietlenie</div>
+    <input  type="color"  value="#000000" id="colled">
+    <div></div>
+    <input type="checkbox" id="bas" value="1" checked="true" onchange="swsub()">
+    <label for="bas"> Stereo</label><br>
+    <input type="checkbox" id="spk" value="1" checked="true" onchange="swstereo()">
+    <label for="spk"> Subwofer</label><br>
+</body>
+</html>
+
+<script>
+        
+    var poty = document.getElementsByClassName("slider") // multi-zbieranie po klasie
+    for (var i=0; i<poty.length; i++)
+    {
+        console.log(poty[i])
+        poty[i].addEventListener("change", function(){setpot(event)})
+    }
+
+    var COLINP = document.getElementById("colled")
+    COLINP.addEventListener("change",function(){setcol(event)} )
+
+    updPots()
+    function updPots()
+    {
+        var xhr = new XMLHttpRequest();
+	    xhr.open("GET", "http://192.168.1.75/givepots", true);
+		xhr.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+			
+            var JSONPOTY = JSON.parse(this.responseText)
+            console.log(JSONPOTY)
+            poty[0].value = JSONPOTY['P0']
+            poty[1].value = JSONPOTY['P1']
+            poty[2].value = JSONPOTY['P2']
+            poty[3].value = JSONPOTY['P3']
+			}
+		};
+		xhr.send(null);
+
+        setTimeout(function(){
+            updPots()
+	},5000)
+    }
+
+
+    //document.getElementById("3").addEventListener("input", updCutoff())
+    function updCutoff()
+    {
+        var CFREQ = document.getElementById("3")
+        var cutoff = document.getElementById("cutoff")
+        cutoff.innerHTML = (((parseInt(CFREQ.value)+1)*1.92)+20).toFixed(1)
+        cutoff.innerHTML += " Hz"
+        console.log(CFREQ.value)
+    }
+
+    function swstereo()
+    {
+        var E = document.getElementById("spk")
+        console.log(E.checked)
+        
+        var xhr = new XMLHttpRequest();
+	    xhr.open("GET", "http://192.168.1.75/relays?bass="+(E.checked ? 1: 0), true);
+		xhr.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+			console.log(this.responseText)
+			}
+		};
+		xhr.send(null);
+    }
+    function swsub()
+    {
+        var E = document.getElementById("bas")
+        console.log(E.checked)
+        
+        var xhr = new XMLHttpRequest();
+	    xhr.open("GET", "http://192.168.1.75/relays?stereo="+(E.checked ? 1: 0), true);
+		xhr.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+			console.log(this.responseText)
+			}
+		};
+		xhr.send(null);
+    }
+    function setcol()
+    {
+        console.log(COLINP.value)
+        var RGBc = HEXtoRGB(COLINP.value)
+        console.log(RGBc[0]+", "+RGBc[1]+", "+RGBc[2])
+
+        var xhr = new XMLHttpRequest();
+	    xhr.open("GET", "http://192.168.1.75/setled?h="+RGBc[0]+"&s="+RGBc[1]+"&v="+RGBc[2], true);
+		xhr.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+			console.log(this.responseText)
+			}
+		};
+		xhr.send(null);
+    }
+
+    function HEXtoRGB(hex){
+	var vRGB = hex.replace('#','');
+	var RGBVAL = parseInt(vRGB,16);
+	var RGBArr = [];
+	RGBArr[0] = RGBVAL >> 16; RGBArr[1] = RGBVAL >> 8 & 255; RGBArr[2] = RGBVAL & 255;
+	return RGBArr;
+}
+
+    function setpot(event)
+    {
+        SNUM = parseInt(event.target.id)
+        SVAL = event.target.value
+
+        var xhr = new XMLHttpRequest();
+	    xhr.open("GET", "http://192.168.1.75/setpot?nr="+SNUM+"&val="+SVAL, true);
+		xhr.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+			console.log(this.responseText)
+			}
+		};
+		xhr.send(null);
+    }
+
+</script>
