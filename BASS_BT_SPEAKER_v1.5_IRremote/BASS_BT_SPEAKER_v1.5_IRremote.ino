@@ -184,7 +184,7 @@ int siteSelector = 0;
 uint16_t      MicOffset = 3470;
 uint16_t      VU_MinAmp = 200;
 uint16_t      VU_MaxAmp = 3000;
-byte          VU_falloffMili = 5;
+byte          VU_falloffMili = 15;
 bool          isRingVU = true;
 
 #include "arduinoFFT_f.h" // dla pojedynczej precyzji
@@ -709,7 +709,7 @@ int RAINBOW_ITER = 0;
 bool RAIN_DIR = 0;
 Kronos RAINdel;
 uint16_t VUsampleDel = 50;
-uint16_t VuSamples = 80;
+uint16_t VuSamples = 90;
 Kronos VUFALLDEL;
 
 void coreTask( void * pvParameters ){

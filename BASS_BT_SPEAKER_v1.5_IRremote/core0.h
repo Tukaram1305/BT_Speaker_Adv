@@ -1,6 +1,6 @@
 if (VU==true && isIndicate==false && VUFALLDEL.del(VU_falloffMili))
 {
-  RAINBOW = false; FFT_ON = false; STATIC_LIGHTS = false;
+  
   if (VUMODEp != VUMODE)
   {
     if (VUMODE < 0) VUMODE = 0;
@@ -12,7 +12,9 @@ if (VU==true && isIndicate==false && VUFALLDEL.del(VU_falloffMili))
     delay(100);
     FastLED.show();
     delay(350);
+    RAINBOW = false; FFT_ON = false; STATIC_LIGHTS = false;
     VUMODEp = VUMODE;
+    VUVAL = 0; VUVALMAX = 0;
   }
 
   /*
